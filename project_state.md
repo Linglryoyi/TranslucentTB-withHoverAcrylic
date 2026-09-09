@@ -29,3 +29,10 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Unmodified application baseline attempted: dotnet msbuild TranslucentTB.slnx /restore /p:Configuration=Release /p:Platform=x64 /p:SkipSigning=True. Failed before compilation: no .NET SDK installed; standalone MSBuild and VC tools absent.
 - Downloaded Microsoft-signed Visual Studio 2026 stable bootstrapper (signature valid) and launched installation using repository .vsconfig filtered to x64 (ARM64 excluded). Installation pending; no functional source changes yet.
 - Runtime tests: all NOT RUN. Next: finish toolchain installation and successful baseline, then hover prototype.
+
+## User correction — prefer VS Code
+- User requested using existing VSC in place of Visual Studio where practical.
+- Confirmed D:\Microsoft VS Code\Code.exe, version 1.114.0.
+- Community installer UI reports download stopped at 4%, installation 0%; bootstrapper and some package files already exist. Do not resume full IDE installation.
+- Evaluate standalone Build Tools + Windows SDK/XAML support, with VS Code as editor. No source behavior changes yet.
+

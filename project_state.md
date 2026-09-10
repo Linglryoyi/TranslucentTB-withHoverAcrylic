@@ -43,3 +43,11 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Stopped both verified installer processes and removed only that installer resume entry. Backup retained outside repository in work/.
 - Do not resume Community installation or install replacement build tooling without returning to the user's development request. Feature development remains paused.
 
+
+## Resumed development — hosted builds and hover prototype
+- Use GitHub Actions windows-2025 to build and test; no local IDE installer launched or resumed.
+- Baseline run 34448203180 restored NuGet dependencies and is compiling unmodified application logic at d715bb0.
+- Added pure TaskbarHoverState, per-monitor storage, 40 ms WM_TIMER polling, 40/80 ms enter/leave confirmation and three behavioral tests. Prototype logs state changes only; appearance is not connected yet.
+- Hit testing requires both taskbar bounds and the top-level window under the pointer, avoiding activation through an overlapping app.
+- Runtime acceptance still not run.
+

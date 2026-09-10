@@ -318,9 +318,40 @@ LRESULT TaskbarAttributeWorker::OnRequestAttributeRefresh(LPARAM lParam)
 	return 0;
 }
 
+void TaskbarAttributeWorker::PollTaskbarHover()
+{
+	if (m_ResettingState)
+	{
+		return;
+	}
+
+	POINT cursor;
+	if (!GetCursorPos(&cursor))
+	{
+		return; // Locked/disconnected input desktop: retain the last known state.
+	}
+	const auto now = TaskbarHoverState::Clock::now();
+	const HWND underCursor = GetAncestor(WindowFromPoint(cursor), GA_ROOT);
+	for (auto &[monitor, info] : m_Taskbars)
+	{
+		const auto window = info.Taskbar.TaskbarWindow;
+		const auto bounds = window.rect();
+		const bool inside = window.visible() && bounds && PtInRect(&*bounds, cursor) && underCursor == window;
+		if (info.Hover.Update(inside, now))
+		{
+			MessagePrint(spdlog::level::debug, std::format(L"Taskbar hover {} on monitor {}", info.Hover.Hovered() ? L"enter" : L"leave", static_cast<void *>(monitor)));
+		}
+	}
+}
+
 LRESULT TaskbarAttributeWorker::MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (uMsg == WM_SETTINGCHANGE)
+	if (uMsg == WM_TIMER && wParam == HoverTimerId)
+	{
+		PollTaskbarHover();
+		return 0;
+	}
+	else if (uMsg == WM_SETTINGCHANGE)
 	{
 		if (InSendMessage())
 		{
@@ -1289,6 +1320,10 @@ TaskbarAttributeWorker::TaskbarAttributeWorker(ConfigManager &cfgManager, HINSTA
 
 	// we don't want to consider the first state reset as an Explorer restart.
 	ResetState(true);
+	if (!SetTimer(m_WindowHandle, HoverTimerId, 40, nullptr))
+	{
+		LastErrorHandle(spdlog::level::critical, L"Failed to start taskbar hover timer");
+	}
 }
 
 void TaskbarAttributeWorker::DumpState()
@@ -1576,6 +1611,7 @@ void TaskbarAttributeWorker::ResetState(bool manual)
 
 TaskbarAttributeWorker::~TaskbarAttributeWorker() noexcept(false)
 {
+	KillTimer(m_WindowHandle, HoverTimerId);
 	m_disableAttributeRefreshReply = true;
 	UnregisterTaskViewCallbacks();
 	UnregisterSearchCallbacks();

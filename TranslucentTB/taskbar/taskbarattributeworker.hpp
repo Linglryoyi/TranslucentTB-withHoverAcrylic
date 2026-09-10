@@ -17,6 +17,7 @@
 #include <winrt/WindowsUdk.UI.Shell.h> // this is less evil
 
 #include "config/taskbarappearance.hpp"
+#include "taskbar/hoverstate.hpp"
 #include "../dynamicloader.hpp"
 #include "../ExplorerHooks/api.hpp"
 #include "../ExplorerTAP/api.hpp"
@@ -55,6 +56,7 @@ private:
 		TaskbarInfo Taskbar;
 		std::unordered_set<Window> MaximisedWindows;
 		std::unordered_set<Window> NormalWindows;
+		TaskbarHoverState Hover;
 	};
 
 	struct MonitorEnumInfo {
@@ -160,6 +162,9 @@ private:
 	using taskbar_iterator = decltype(m_Taskbars)::iterator;
 
 	// Callbacks
+	static constexpr UINT_PTR HoverTimerId = 1;
+	void PollTaskbarHover();
+
 	template<DWORD insert, DWORD remove>
 	void CALLBACK WindowInsertRemove(DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD, DWORD);
 

@@ -1,0 +1,54 @@
+name: Hover Acrylic Windows build
+
+on:
+  push:
+    branches: [feature/hover-acrylic]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-x64:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - uses: NuGet/setup-nuget@v2
+        with:
+          nuget-version: '7.0.1'
+      - name: Integrate vcpkg
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_INSTALLATION_ROOT/vcpkg.exe" integrate install
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Restore packages
+        run: nuget restore TranslucentTB.slnx -Source https://api.nuget.org/v3/index.json -NonInteractive
+      - name: Build Release x64
+        run: msbuild TranslucentTB.slnx /m /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:SkipSigning=True /p:AppxPackageSigningEnabled=false /bl:build.binlog /fl /flp:logfile=build.log;verbosity=normal
+      - name: Run tests
+        shell: pwsh
+        run: |
+          & ./x64/Release/Tests.exe --gtest_output=xml:test-results.xml
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Package portable application
+        shell: pwsh
+        run: |
+          ./.azp/scripts/create-portable.ps1 -Platform x64 -Configuration Release -WorkDir "$env:RUNNER_TEMP" -OutputDir "$env:GITHUB_WORKSPACE/portable" -NoConfig
+          Copy-Item LICENSE.md portable/
+          git rev-parse HEAD | Set-Content portable/build-commit.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hover-acrylic-portable-x64
+          path: portable/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-diagnostics
+          path: |
+            build.log
+            build.binlog
+            test-results.xml

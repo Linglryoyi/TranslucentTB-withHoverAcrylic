@@ -36,3 +36,10 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Community installer UI reports download stopped at 4%, installation 0%; bootstrapper and some package files already exist. Do not resume full IDE installation.
 - Evaluate standalone Build Tools + Windows SDK/XAML support, with VS Code as editor. No source behavior changes yet.
 
+
+## 2026-09-10 — Stop unwanted installer startup
+- User explicitly requested stopping VS2026 downloads and boot popups.
+- Found two setup.exe processes resuming the Community install and HKLM RunOnce entry 6EA26FFDFC3C3CADAF6C.
+- Stopped both verified installer processes and removed only that installer resume entry. Backup retained outside repository in work/.
+- Do not resume Community installation or install replacement build tooling without returning to the user's development request. Feature development remains paused.
+

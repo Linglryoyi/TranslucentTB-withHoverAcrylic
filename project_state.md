@@ -65,3 +65,8 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Change CI to x64 MSBuild and serialize project builds (/m:1, BuildInParallel=false) to avoid simultaneous metadata requests. No application logic changed to mask this environment/build-order failure.
 - Windows 11 25H2 build 26200.8037 has x64 Microsoft.UI.Xaml.2.8 and VCLibs.140.00 meeting the upstream minimum versions.
 
+
+## Configuration test dependency correction
+- Full feature run 34448648855 additionally exposed missing spdlog/common.h in Tests, whose new configuration tests include Config. Declare spdlog in Tests/vcpkg.json, matching the application's existing dependency.
+- Serialized build ff85fe6 is still running; no successful binary or runtime result yet.
+

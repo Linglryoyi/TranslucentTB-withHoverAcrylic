@@ -1,4 +1,5 @@
 #include "taskbarappearanceservice.hpp"
+#include <chrono>
 #include <RpcProxy.h>
 #include <shellapi.h>
 #include <wil/cppwinrt_helpers.h>
@@ -40,31 +41,64 @@ HRESULT TaskbarAppearanceService::SetTaskbarAppearance(HWND taskbar, TaskbarBrus
 	{
 		if (info->background.control && info->background.originalFill)
 		{
+			const auto currentFill = info->background.control.Fill();
+			if (info->requestedBrush == brush && info->requestedColor == color && currentFill == info->managedFill)
+			{
+				return S_OK; // Do not restart an in-flight transition on identical requests.
+			}
+
 			const winrt::Windows::UI::Color tint = Util::Color::FromABGR(color);
-			wux::Media::Brush newBrush = nullptr;
+			const bool wasClear = info->requestedBrush == SolidColor && (info->requestedColor >> 24) == 0;
+			const bool clear = brush == SolidColor && tint.A == 0;
+			if (currentFill != info->managedFill)
+			{
+				ResetBackgroundTransition(*info);
+			}
+
 			if (brush == Acrylic)
 			{
-				wux::Media::AcrylicBrush acrylicBrush;
-				// on the taskbar, using Backdrop instead of HostBackdrop
-				// makes the effect still show what's behind, but also not disable itself
-				// when the window isn't active
-				// this is because it sources what's behind the XAML, and the taskbar window
-				// is transparent so what's behind is actually the content behind the window
-				// (it doesn't need to poke a hole like HostBackdrop)
-				acrylicBrush.BackgroundSource(wux::Media::AcrylicBackgroundSource::Backdrop);
-				acrylicBrush.TintColor(tint);
-
-				newBrush = std::move(acrylicBrush);
+				if (!info->acrylicFill)
+				{
+					const auto visual = wuxh::ElementCompositionPreview::GetElementVisual(info->background.control);
+					info->originalOpacity = visual.Opacity();
+					if (wasClear)
+					{
+						visual.Opacity(0);
+					}
+					wux::Media::AcrylicBrush acrylicBrush;
+					// Preserve upstream Backdrop behavior: transparent taskbar HWND,
+					// with Acrylic active even when the taskbar is not foreground.
+					acrylicBrush.BackgroundSource(wux::Media::AcrylicBackgroundSource::Backdrop);
+					acrylicBrush.TintColor(tint);
+					info->acrylicFill = acrylicBrush;
+					info->managedFill = acrylicBrush;
+					info->background.control.Fill(acrylicBrush);
+				}
+				else if (info->acrylicFill.TintColor() != tint)
+				{
+					info->acrylicFill.TintColor(tint);
+				}
+				if (wasClear)
+				{
+					AnimateBackground(*info, true);
+				}
+			}
+			else if (clear && info->acrylicFill)
+			{
+				// Keep the same Acrylic brush while fading to fully transparent.
+				// Reversing can then start at the compositor's current opacity.
+				AnimateBackground(*info, false);
 			}
 			else if (brush == SolidColor)
 			{
+				ResetBackgroundTransition(*info);
 				wux::Media::SolidColorBrush solidBrush;
 				solidBrush.Color(tint);
-
-				newBrush = std::move(solidBrush);
+				info->managedFill = solidBrush;
+				info->background.control.Fill(solidBrush);
 			}
-
-			info->background.control.Fill(newBrush);
+			info->requestedBrush = brush;
+			info->requestedColor = color;
 		}
 	}
 
@@ -81,6 +115,7 @@ HRESULT TaskbarAppearanceService::SetTaskbarBlur(HWND taskbar, UINT color, FLOAT
 	{
 		if (info->background.control && info->background.originalFill)
 		{
+			ResetBackgroundTransition(*info);
 			const winrt::Windows::UI::Color tint = Util::Color::FromABGR(color);
 			const wfn::float4 tintHdr = {
 				tint.R / 255.0f,
@@ -103,10 +138,11 @@ catch (...)
 
 HRESULT TaskbarAppearanceService::ReturnTaskbarToDefaultAppearance(HWND taskbar) try
 {
-	for (const auto& [handle, info] : m_Taskbars)
+	for (auto& [handle, info] : m_Taskbars)
 	{
 		if (GetAncestor(info.window, GA_PARENT) == taskbar)
 		{
+			ResetBackgroundTransition(info);
 			RestoreDefaultControlFill(info.background);
 			break;
 		}
@@ -152,8 +188,9 @@ catch (...)
 
 HRESULT TaskbarAppearanceService::RestoreAllTaskbarsToDefault() try
 {
-	for (const auto& [handle, info] : m_Taskbars)
+	for (auto& [handle, info] : m_Taskbars)
 	{
+		ResetBackgroundTransition(info);
 		RestoreDefaultControlFill(info.background);
 		RestoreDefaultControlFill(info.border);
 	}
@@ -238,6 +275,7 @@ void TaskbarAppearanceService::RegisterTaskbarBackground(InstanceHandle frameHan
 {
 	if (const auto it = m_Taskbars.find(frameHandle); it != m_Taskbars.end())
 	{
+		ResetBackgroundTransition(it->second);
 		it->second.background.control = element;
 
 		// sometimes we may see objects come with their fill set to null, wait until the system initialized it before
@@ -355,17 +393,46 @@ void TaskbarAppearanceService::OnPackageUpdating(const wam::PackageCatalog&, con
 	}
 }
 
-std::optional<TaskbarAppearanceService::TaskbarInfo> TaskbarAppearanceService::GetTaskbarInfo(HWND taskbar)
+TaskbarAppearanceService::TaskbarInfo *TaskbarAppearanceService::GetTaskbarInfo(HWND taskbar)
 {
-	for (const auto& [handle, info] : m_Taskbars)
+	for (auto& [handle, info] : m_Taskbars)
 	{
 		if (GetAncestor(info.window, GA_PARENT) == taskbar)
 		{
-			return info;
+			return &info;
 		}
 	}
 
-	return std::nullopt;
+	return nullptr;
+}
+
+void TaskbarAppearanceService::AnimateBackground(TaskbarInfo &info, bool visible)
+{
+	const auto visual = wuxh::ElementCompositionPreview::GetElementVisual(info.background.control);
+	const auto compositor = visual.Compositor();
+	const auto animation = compositor.CreateScalarKeyFrameAnimation();
+	animation.InsertExpressionKeyFrame(0.0f, L"this.StartingValue");
+	animation.InsertKeyFrame(1.0f, visible ? info.originalOpacity.value_or(1.0f) : 0.0f,
+		compositor.CreateCubicBezierEasingFunction({ 0.2f, 0.0f }, { 0.2f, 1.0f }));
+	animation.Duration(std::chrono::milliseconds(visible ? 200 : 280));
+	animation.StopBehavior(winrt::Windows::UI::Composition::AnimationStopBehavior::LeaveCurrentValue);
+	// Only the background Shape is affected. Never animate its taskbar parent,
+	// child controls or HWND. Replacing the animation preserves its current value.
+	visual.StartAnimation(L"Opacity", animation);
+}
+
+void TaskbarAppearanceService::ResetBackgroundTransition(TaskbarInfo &info)
+{
+	if (info.originalOpacity && info.background.control)
+	{
+		const auto visual = wuxh::ElementCompositionPreview::GetElementVisual(info.background.control);
+		visual.StopAnimation(L"Opacity");
+		visual.Opacity(*info.originalOpacity);
+	}
+	info.originalOpacity.reset();
+	info.acrylicFill = nullptr;
+	info.managedFill = nullptr;
+	info.requestedBrush.reset();
 }
 
 void TaskbarAppearanceService::OnTaskbarBackgroundUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty&)

@@ -62,12 +62,19 @@ private:
 	{
 		ControlInfo<wux::Shapes::Shape> background, border;
 		HWND window;
+		std::optional<TaskbarBrush> requestedBrush;
+		UINT requestedColor = 0;
+		wux::Media::Brush managedFill = nullptr;
+		wux::Media::AcrylicBrush acrylicFill = nullptr;
+		std::optional<float> originalOpacity;
 	};
 
 	winrt::fire_and_forget OnProcessDied();
 	void OnPackageUninstalling(const wam::PackageCatalog &catalog, const wam::PackageUninstallingEventArgs &args);
 	void OnPackageUpdating(const wam::PackageCatalog &catalog, const wam::PackageUpdatingEventArgs &args);
-	std::optional<TaskbarInfo> GetTaskbarInfo(HWND taskbar);
+	TaskbarInfo *GetTaskbarInfo(HWND taskbar);
+	static void ResetBackgroundTransition(TaskbarInfo &info);
+	static void AnimateBackground(TaskbarInfo &info, bool visible);
 
 	void OnTaskbarBackgroundUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);
 	void OnTaskbarBorderUpdated(const wux::DependencyObject &sender, const wux::DependencyProperty &dp);

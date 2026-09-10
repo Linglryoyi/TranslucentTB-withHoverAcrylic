@@ -51,3 +51,11 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Hit testing requires both taskbar bounds and the top-level window under the pointer, avoiding activation through an overlapping app.
 - Runtime acceptance still not run.
 
+
+## Functional appearance and transition implementation (awaiting validation)
+- e299a14 connects hover after maximized rules and before visible-window rules. Battery Saver, Task View, Peek, Start and Search keep upstream precedence.
+- Added hovered_appearance configuration/schema; defaults enable hover Acrylic and existing maximized Acrylic. Existing explicit user overrides remain respected.
+- Windows 11 background-only compositor transition: enter 200 ms, leave 280 ms. Retain the same native Acrylic brush while clear, fading only the background Shape visual to zero. A new animation starts from the compositor's current value; identical appearance requests do not restart animations.
+- Restore the background visual's original opacity before stock/blur/other appearances or process-exit recovery. No taskbar HWND layering or icon fading added.
+- Legacy taskbar rendering retains upstream immediate appearance changes; smooth animation targets the Windows 11 XAML service.
+- Compile, animation reversal and real-machine visual acceptance remain pending. No completion tag or deployment yet.

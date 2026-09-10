@@ -1,6 +1,17 @@
 # Project state
 
-## Phase 0 — Repository setup (in progress)
+## Current checkpoint — deployed, awaiting visual acceptance
+- Successful binary source: 65bf7056025d91d695b4bc86ab4e9430630230ed. CI run 34451139531: Release x64, zero warnings/errors, all 86 tests passed.
+- Portable artifact SHA256: 486538ff82c14943eed10cf73f8e1abc2bd7dff2b2929e46a189e4f49a5899a6 (verified after download).
+- Deployed to ../HoverAcrylic/TranslucentTB.exe; settings.json currently enables debug diagnostics for acceptance.
+- First launch exited with the upstream restart-required message because the old HUXSoft Translucent Taskbar component remained in Explorer. Restarted Explorer; new application runs successfully.
+- Disabled only the old Translucent Taskbar startup item through Task Manager. Created and read back the standard current-user Startup-folder shortcut, TranslucentTB Hover Acrylic.lnk.
+- Real hover enter/leave and maximized-window insertion/removal events appear in the debug log. User visual feedback is pending; event detection alone does not prove the appearance or animation.
+- Running application survived a subsequent Explorer restart; new taskbar discovered and connection restored within about two seconds. Only the fork TAP DLL is present in the new Explorer. Transient RPC/COM errors occurred during shell teardown, followed by successful recovery.
+- Approximate memory: 78–90 MiB working set. CPU increased about 0.08 seconds during an approximately one-minute idle interval; broader performance testing not performed.
+- Remaining: user visual results A–H, visible recovery confirmation, actual next-sign-in startup test, available multi-monitor checks. Keep debug logging until diagnosis is complete, then return verbosity to warn. No release tag or merge before acceptance.
+
+## Phase 0 — Repository setup (historical)
 - Branch: feature/hover-acrylic, created from origin/release.
 - Baseline commit: d4636e439865df0a1a1419db408e055740ce5c74.
 - Current commit: see `git rev-parse HEAD`; phase documentation records the preceding checkpoint to avoid self-referential hashes.
@@ -15,7 +26,10 @@
 - Next: fetch upstream, commit/push setup, inspect required modules and attempt baseline.
 
 ## Acceptance ledger
-All runtime tests A–J are NOT RUN. No application deployed, startup enabled, release tag created, or completion claimed.
+- A–H: visual acceptance PENDING; hover and maximized event detection observed in logs.
+- I: automatic reconnection PASS; visible appearance after reconnection awaits user confirmation.
+- J: startup shortcut configured and target verified; actual sign-in test PENDING.
+- Application deployed and running. No release tag or completion claimed.
 
 ## Phase 1 — Architecture and baseline
 - Setup checkpoint 6ebdde0 pushed successfully to origin/feature/hover-acrylic; upstream fetched.

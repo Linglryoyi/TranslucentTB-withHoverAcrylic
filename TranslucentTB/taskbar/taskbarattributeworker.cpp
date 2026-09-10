@@ -332,6 +332,7 @@ void TaskbarAttributeWorker::PollTaskbarHover()
 	}
 	const auto now = TaskbarHoverState::Clock::now();
 	const HWND underCursor = GetAncestor(WindowFromPoint(cursor), GA_ROOT);
+	AttributeRefresher refresher(*this);
 	for (auto &[monitor, info] : m_Taskbars)
 	{
 		const auto window = info.Taskbar.TaskbarWindow;
@@ -340,6 +341,10 @@ void TaskbarAttributeWorker::PollTaskbarHover()
 		if (info.Hover.Update(inside, now))
 		{
 			MessagePrint(spdlog::level::debug, std::format(L"Taskbar hover {} on monitor {}", info.Hover.Hovered() ? L"enter" : L"leave", static_cast<void *>(monitor)));
+			if (m_ConfigManager.GetConfig().HoveredAppearance.Enabled)
+			{
+				refresher.refresh(m_Taskbars.find(monitor));
+			}
 		}
 	}
 }
@@ -496,6 +501,11 @@ TaskbarAppearance TaskbarAttributeWorker::GetConfig(taskbar_iterator taskbar) co
 
 		// otherwise, use the normal maximized state
 		return WithPreview(txmp::TaskbarState::MaximisedWindow, config.MaximisedWindowAppearance);
+	}
+
+	if (config.HoveredAppearance.Enabled && taskbar->second.Hover.Hovered())
+	{
+		return config.HoveredAppearance;
 	}
 
 	if (config.VisibleWindowAppearance.Enabled && (!maximisedWindows.empty() || !taskbar->second.NormalWindows.empty()))

@@ -111,6 +111,10 @@
     "maximized_window_appearance": {
       "$ref": "#/$defs/RuledTaskbarAppearance"
     },
+    "hovered_appearance": {
+      "description": "Per-taskbar hover appearance, below maximized and shell special states in priority.",
+      "$ref": "#/$defs/OptionalTaskbarAppearance"
+    },
     "start_opened_appearance": {
       "$ref": "#/$defs/OptionalTaskbarAppearance"
     },

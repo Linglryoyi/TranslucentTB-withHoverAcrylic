@@ -97,7 +97,7 @@ bool ConfigManager::TryOpenConfigAsJson() noexcept
 void ConfigManager::SaveToFile(FILE *f) const
 {
 	static constexpr std::string_view COMMENT = "// See https://TranslucentTB.github.io/config for more information\n";
-	static constexpr std::wstring_view SCHEMA = L"https://TranslucentTB.github.io/settings.schema.json";
+	static constexpr std::wstring_view SCHEMA = L"https://raw.githubusercontent.com/Linglryoyi/TranslucentTB-withHoverAcrylic/feature/hover-acrylic/settings.schema.json";
 
 	char buffer[1024];
 	rj::FileWriteStream filestream(f, buffer, std::size(buffer));

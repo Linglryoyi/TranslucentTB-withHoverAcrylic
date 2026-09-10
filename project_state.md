@@ -70,3 +70,9 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Full feature run 34448648855 additionally exposed missing spdlog/common.h in Tests, whose new configuration tests include Config. Declare spdlog in Tests/vcpkg.json, matching the application's existing dependency.
 - Serialized build ff85fe6 is still running; no successful binary or runtime result yet.
 
+
+## Serialized build result
+- Run 34450778644 at ff85fe6: ExplorerHooks.dll, ExplorerTAP.dll, ProgramLog.dll, Xaml.dll and TranslucentTB.exe compiled successfully, zero warnings. MSB4006 is resolved by serialized builds.
+- Overall solution failed only on Tests missing spdlog/common.h; fix 65bf705 already pushed and run 34451139531 is in progress. Keep metadata settings unchanged because no additional workaround is required.
+- No portable artifact from the failed run; local launch and acceptance remain pending.
+

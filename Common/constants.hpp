@@ -14,7 +14,9 @@ static constexpr Util::null_terminated_wstring_view MUTEX_GUID = L"344635E9-9AE4
 static constexpr Util::null_terminated_wstring_view TAP_READY_EVENT = L"TTBTAP_Ready";
 
 // Current version of the API used for IPC with the TAP
-static constexpr std::uint32_t TAP_API_VERSION = 4;
+// Fork behavior version: reject an older upstream TAP still pinned in Explorer,
+// which accepts the same COM methods but cannot perform the hover transition.
+static constexpr std::uint32_t TAP_API_VERSION = 0x48410001;
 
 // Tray icon GUID
 static constexpr GUID TRAY_GUID = { 0xA7E6B7AF, 0xDF89, 0x41BD, { 0x8D, 0x78, 0x60, 0xE5, 0x8F, 0x83, 0x3E, 0x0 } };

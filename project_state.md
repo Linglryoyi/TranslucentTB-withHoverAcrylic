@@ -59,3 +59,9 @@ All runtime tests A–J are NOT RUN. No application deployed, startup enabled, r
 - Restore the background visual's original opacity before stock/blur/other appearances or process-exit recovery. No taskbar HWND layering or icon fading added.
 - Legacy taskbar rendering retains upstream immediate appearance changes; smooth animation targets the Windows 11 XAML service.
 - Compile, animation reversal and real-machine visual acceptance remain pending. No completion tag or deployment yet.
+
+## Baseline CI diagnosis
+- Baseline d715bb0 run 34448203180 failed with MSB4006, a circular CppWinRTComputeGetResolvedWinMD target graph in TranslucentTB.vcxproj, and dependent DesktopBridge MSB4181. Zero compiler warnings. Xaml library built; complete application build did not pass.
+- Change CI to x64 MSBuild and serialize project builds (/m:1, BuildInParallel=false) to avoid simultaneous metadata requests. No application logic changed to mask this environment/build-order failure.
+- Windows 11 25H2 build 26200.8037 has x64 Microsoft.UI.Xaml.2.8 and VCLibs.140.00 meeting the upstream minimum versions.
+

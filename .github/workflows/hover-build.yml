@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
       - uses: NuGet/setup-nuget@v2
         with:
           nuget-version: '7.0.1'
@@ -27,7 +29,9 @@ jobs:
       - name: Restore packages
         run: nuget restore TranslucentTB.slnx -Source https://api.nuget.org/v3/index.json -NonInteractive
       - name: Build Release x64
-        run: msbuild TranslucentTB.slnx /m /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:SkipSigning=True /p:AppxPackageSigningEnabled=false /bl:build.binlog /fl "/flp:logfile=build.log;verbosity=normal"
+        # C++/WinRT metadata resolution in this solution can create a circular
+        # target graph when the app and DesktopBridge request it concurrently.
+        run: msbuild TranslucentTB.slnx /m:1 /p:BuildInParallel=false /p:Configuration=Release /p:Platform=x64 /p:BuildType=Dev /p:SkipSigning=True /p:AppxPackageSigningEnabled=false /bl:build.binlog /fl "/flp:logfile=build.log;verbosity=normal"
       - name: Run tests
         shell: pwsh
         run: |

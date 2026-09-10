@@ -7,7 +7,15 @@
 
 ![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880766-4380b2cf-4d9e-4d07-8986-a9b34cb6244a.png#gh-dark-mode-only)![Microsoft Store App Awards 2022 - Community Choice Award: Open Platform (runner up)](https://user-images.githubusercontent.com/6440374/180880839-355c472c-0b7a-4aae-88e5-0234001cb281.png#gh-light-mode-only)
 
-A lightweight (uses a few MB of RAM and almost no CPU) utility that makes the Windows taskbar translucent/transparent on Windows 10 and Windows 11.
+This is **TranslucentTB with Hover Acrylic**, a GPL-3.0 fork of [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB). Upstream authorship and license are preserved.
+
+The fork adds per-taskbar hover Acrylic, with a Clear desktop and Acrylic while a relevant window is maximized. Windows 11 XAML taskbar backgrounds fade in over 200 ms and out over 280 ms; icons do not fade. Hover uses a 40 ms cursor poll and 40/80 ms enter/leave confirmation. Start, Search, Task View, Peek and battery-saver precedence remain intact.
+
+The feature is under validation; see [project_state.md](project_state.md) for actual build and real-machine test results. Do not treat this description as a completed acceptance test.
+
+See [HOVER_ACRYLIC.md](HOVER_ACRYLIC.md) for configuration, VS Code development and portable build instructions.
+
+The upstream utility makes the Windows taskbar translucent/transparent on Windows 10 and Windows 11. The remaining sections describe upstream features and downloads; upstream releases do not include this fork's hover feature.
 
 ## Features
 

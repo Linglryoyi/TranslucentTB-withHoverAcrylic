@@ -17,5 +17,6 @@
 - [ ] Additional coverage: independently observe next-sign-in startup.
 - [x] Record runtime evidence and owner acceptance, distinguishing unobserved A–J details.
 - [x] Push stable implementation checkpoints.
-- [ ] Publish owner-accepted v0.1.0-hover-acrylic tag and portable release.
+- [x] Publish owner-accepted v0.1.0-hover-acrylic tag and checksum-verified portable release.
+- [x] Fast-forward the fork's default release branch to the accepted feature history.
 

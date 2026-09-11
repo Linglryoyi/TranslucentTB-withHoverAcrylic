@@ -1,8 +1,10 @@
 # Project state
 
-## Current checkpoint — owner accepted, release preparation
+## Current checkpoint — owner accepted and released
 - On 2026-09-11 the owner explicitly confirmed the task is complete and the program is usable on their PC, and authorized GitHub housekeeping. This supersedes the pending overall acceptance decision below. It is owner acceptance, not a claim that every individual A–J scenario was independently observed by the agent.
-- Prepare v0.1.0-hover-acrylic, merge the feature into the fork's release branch, and publish the exact tested portable artifact. Release documentation/workflow changes do not alter the tested application sources.
+- Published [v0.1.0-hover-acrylic](https://github.com/Linglryoyi/TranslucentTB-withHoverAcrylic/releases/tag/v0.1.0-hover-acrylic). Tag commit a4baa368ec6475a9660716dbec2fb989524c45f5 adds documentation/publishing automation only to the tested application sources.
+- The GitHub connector rejected PR creation with HTTP 403 (integration permission); instead, safely fast-forwarded the fork's release branch from d4636e4 to the accepted feature history. No force push or history rewrite.
+- Publishing workflow 34581539163 succeeded. Public portable ZIP is 1,712,099 bytes and its GitHub SHA256 matches the tested/downloaded artifact below. Source branch and default release branch are synchronized; feature branch retained for history.
 - Successful binary source: 65bf7056025d91d695b4bc86ab4e9430630230ed. CI run 34451139531: Release x64, zero warnings/errors, all 86 tests passed.
 - Portable artifact SHA256: 486538ff82c14943eed10cf73f8e1abc2bd7dff2b2929e46a189e4f49a5899a6 (verified after download).
 - Deployed to ../HoverAcrylic/TranslucentTB.exe; settings.json currently enables debug diagnostics for acceptance.

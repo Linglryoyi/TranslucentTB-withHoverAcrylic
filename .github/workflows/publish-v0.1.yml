@@ -1,0 +1,61 @@
+name: Publish accepted Hover Acrylic v0.1
+
+on:
+  push:
+    tags: [v0.1.0-hover-acrylic]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = 'v0.1.0-hover-acrylic';
+            const testedSource = '65bf7056025d91d695b4bc86ab4e9430630230ed';
+            const repo = context.repo;
+            const run = (await github.rest.actions.getWorkflowRun({...repo, run_id: 34451139531})).data;
+            if (run.conclusion !== 'success' || run.head_sha !== testedSource) throw Error('Unexpected build provenance');
+            const comparison = (await github.rest.repos.compareCommits({...repo, base: testedSource, head: tag})).data;
+            if (comparison.files.some(f => !f.filename.endsWith('.md') && f.filename !== '.github/workflows/publish-v0.1.yml')) {
+              throw Error('Release source differs from the tested application');
+            }
+            const artifact = (await github.rest.actions.getArtifact({...repo, artifact_id: 10141952278})).data;
+            if (artifact.expired || artifact.workflow_run.head_sha !== testedSource) throw Error('Artifact unavailable or mismatched');
+            const archive = await github.rest.actions.downloadArtifact({...repo, artifact_id: artifact.id, archive_format: 'zip'});
+            const bytes = Buffer.from(archive.data);
+            const hash = require('crypto').createHash('sha256').update(bytes).digest('hex');
+            if (hash !== '486538ff82c14943eed10cf73f8e1abc2bd7dff2b2929e46a189e4f49a5899a6') throw Error('Artifact checksum mismatch');
+            const body = [
+              'Windows 11 x64 portable build of this GPL-3.0 TranslucentTB fork.',
+              '',
+              '- Clear desktop; Acrylic on taskbar hover or relevant maximized windows.',
+              '- Background-only 200 ms entry / 280 ms exit transitions and per-taskbar debounce.',
+              '- Release x64: zero warnings/errors; all 86 tests passed.',
+              '- Deployed locally; Explorer reconnection verified; owner confirmed usability on 2026-09-11.',
+              '- Startup shortcut configured. Next-sign-in, detailed visual scenarios, multi-monitor hot-plug and auto-hide were not independently verified.',
+              '',
+              'Extract the entire ZIP and run TranslucentTB.exe. Keep all DLLs and assets together. Windows 11 and the upstream XAML/VC runtime dependencies are required. Exit other taskbar utilities first; an old loaded TAP component may require restarting Explorer.',
+              '',
+              `Binary source: ${testedSource}. The tag adds release documentation and publishing automation only.`,
+              `SHA256 (portable ZIP): ${hash}`,
+              '',
+              'Upstream: https://github.com/TranslucentTB/TranslucentTB. Original authorship and GPL-3.0 license retained.'
+            ].join('\n');
+            let release;
+            try { release = (await github.rest.repos.getReleaseByTag({...repo, tag})).data; }
+            catch (error) {
+              if (error.status !== 404) throw error;
+              release = (await github.rest.repos.createRelease({...repo, tag_name: tag, name: 'Hover Acrylic v0.1.0', body, draft: true})).data;
+            }
+            const name = 'TranslucentTB-HoverAcrylic-v0.1.0-x64.zip';
+            const assets = (await github.rest.repos.listReleaseAssets({...repo, release_id: release.id})).data;
+            if (!assets.some(a => a.name === name)) {
+              await github.rest.repos.uploadReleaseAsset({...repo, release_id: release.id, name, data: bytes, headers: {'content-type': 'application/zip', 'content-length': bytes.length}});
+            }
+            await github.rest.repos.updateRelease({...repo, release_id: release.id, body, draft: false, make_latest: 'true'});

@@ -11,7 +11,7 @@ This is **TranslucentTB with Hover Acrylic**, a GPL-3.0 fork of [TranslucentTB](
 
 The fork adds per-taskbar hover Acrylic, with a Clear desktop and Acrylic while a relevant window is maximized. Windows 11 XAML taskbar backgrounds fade in over 200 ms and out over 280 ms; icons do not fade. Hover uses a 40 ms cursor poll and 40/80 ms enter/leave confirmation. Start, Search, Task View, Peek and battery-saver precedence remain intact.
 
-The feature is under validation; see [project_state.md](project_state.md) for actual build and real-machine test results. Do not treat this description as a completed acceptance test.
+The owner confirmed the deployed version works on their Windows 11 PC on 2026-09-11. Download the portable x64 build from [this fork's releases](https://github.com/Linglryoyi/TranslucentTB-withHoverAcrylic/releases). The Release x64 build passed all 86 tests. See [project_state.md](project_state.md) for validation evidence and remaining coverage limitations.
 
 See [HOVER_ACRYLIC.md](HOVER_ACRYLIC.md) for configuration, VS Code development and portable build instructions.
 

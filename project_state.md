@@ -1,15 +1,17 @@
 # Project state
 
-## Current checkpoint — deployed, awaiting visual acceptance
+## Current checkpoint — owner accepted, release preparation
+- On 2026-09-11 the owner explicitly confirmed the task is complete and the program is usable on their PC, and authorized GitHub housekeeping. This supersedes the pending overall acceptance decision below. It is owner acceptance, not a claim that every individual A–J scenario was independently observed by the agent.
+- Prepare v0.1.0-hover-acrylic, merge the feature into the fork's release branch, and publish the exact tested portable artifact. Release documentation/workflow changes do not alter the tested application sources.
 - Successful binary source: 65bf7056025d91d695b4bc86ab4e9430630230ed. CI run 34451139531: Release x64, zero warnings/errors, all 86 tests passed.
 - Portable artifact SHA256: 486538ff82c14943eed10cf73f8e1abc2bd7dff2b2929e46a189e4f49a5899a6 (verified after download).
 - Deployed to ../HoverAcrylic/TranslucentTB.exe; settings.json currently enables debug diagnostics for acceptance.
 - First launch exited with the upstream restart-required message because the old HUXSoft Translucent Taskbar component remained in Explorer. Restarted Explorer; new application runs successfully.
 - Disabled only the old Translucent Taskbar startup item through Task Manager. Created and read back the standard current-user Startup-folder shortcut, TranslucentTB Hover Acrylic.lnk.
-- Real hover enter/leave and maximized-window insertion/removal events appear in the debug log. User visual feedback is pending; event detection alone does not prove the appearance or animation.
+- Real hover enter/leave and maximized-window insertion/removal events appear in the debug log. Owner confirmed overall usability; detailed visual measurements were not separately supplied.
 - Running application survived a subsequent Explorer restart; new taskbar discovered and connection restored within about two seconds. Only the fork TAP DLL is present in the new Explorer. Transient RPC/COM errors occurred during shell teardown, followed by successful recovery.
 - Approximate memory: 78–90 MiB working set. CPU increased about 0.08 seconds during an approximately one-minute idle interval; broader performance testing not performed.
-- Remaining: user visual results A–H, visible recovery confirmation, actual next-sign-in startup test, available multi-monitor checks. Keep debug logging until diagnosis is complete, then return verbosity to warn. No release tag or merge before acceptance.
+- Coverage limitations: no separate per-scenario visual report for A–H, no independently observed next-sign-in startup test, and no monitor hot-plug/auto-hide testing. These remain coverage notes, not invented passes. Owner accepted the deployed version and authorized release housekeeping.
 
 ## Phase 0 — Repository setup (historical)
 - Branch: feature/hover-acrylic, created from origin/release.
@@ -26,10 +28,10 @@
 - Next: fetch upstream, commit/push setup, inspect required modules and attempt baseline.
 
 ## Acceptance ledger
-- A–H: visual acceptance PENDING; hover and maximized event detection observed in logs.
+- A–H: owner accepted overall deployed behavior on 2026-09-11; individual scenarios not separately reported. Hover and maximized event detection observed in logs.
 - I: automatic reconnection PASS; visible appearance after reconnection awaits user confirmation.
 - J: startup shortcut configured and target verified; actual sign-in test PENDING.
-- Application deployed and running. No release tag or completion claimed.
+- Application deployed and owner accepted. Publish v0.1.0 with the above coverage limitations disclosed.
 
 ## Phase 1 — Architecture and baseline
 - Setup checkpoint 6ebdde0 pushed successfully to origin/feature/hover-acrylic; upstream fetched.
